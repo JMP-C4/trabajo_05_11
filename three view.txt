@@ -1,0 +1,32 @@
+hotel-reservas/
+├─ app/
+│  ├─ __init__.py
+│  ├─ models.py
+│  ├─ routes.py
+│  ├─ auth.py
+│  ├─ utils.py
+│  └─ templates/
+│     ├─ base.html
+│     ├─ login.html
+│     ├─register.html  
+│     ├─ reserve.html
+│     └─ dashboard.html
+├─ tests/
+│  ├─ test_search.py
+│  └─ test_reservation.py
+├─ data/
+│  ├─ dataset_defectos.csv
+│  └─ hotel_reservas.db
+├─ docs/
+│  ├─ Plan_Pruebas_Hotel.pdf
+│  └─ Matriz_Riesgo_RPN.xlsx
+├─ sistema_metricas.py
+├─ make_dashboards.py
+├─ requirements.txt
+├─ README.md
+├─ pytest.ini
+└─ .gitignore
+
+
+Username: admin
+Password: devpass

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Crear Reserva</h2>
+
+<form method="get" action="{{ url_for('main.reserve') }}">
+    <label>Filtrar por tipo (opcional):</label>
+    <select name="type">
+        <option value="">Todos</option>
+        {% for t in types %}
+        <option value="{{ t }}" {% if type == t %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+    </select>
+    <label>Check-in:</label>
+    <input type="date" name="checkin" value="{{ checkin or '' }}" />
+    <label>Check-out:</label>
+    <input type="date" name="checkout" value="{{ checkout or '' }}" />
+    <button type="submit">Filtrar</button>
+</form>
+
+<hr />
+
+<form method="post" action="{{ url_for('main.reserve') }}">
+    <label>Habitación:</label>
+    <select name="room_id" required>
+        {% for room in rooms %}
+        <option value="{{ room.id }}">{{ room.number }} - {{ room.type }}</option>
+        {% endfor %}
+    </select>
+    <button type="button" id="open-add-room">Agregar habitación</button>
+    <label>Check-in:</label>
+    <input type="date" name="checkin" value="{{ checkin or '' }}" required />
+    <label>Check-out:</label>
+    <input type="date" name="checkout" value="{{ checkout or '' }}" required />
+    <button type="submit">Crear Reserva</button>
+</form>
+
+<p><a href="{{ url_for('main.dashboard') }}">Volver al dashboard</a></p>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Simple modal behavior
+const openBtn = document.getElementById('open-add-room');
+if (openBtn) {
+    openBtn.addEventListener('click', ()=>{
+        // create modal markup
+        const modal = document.createElement('div');
+        modal.id = 'add-room-modal';
+        modal.style.position = 'fixed';
+        modal.style.left = '0'; modal.style.top = '0'; modal.style.width = '100%'; modal.style.height = '100%';
+        modal.style.background = 'rgba(0,0,0,0.5)'; modal.style.display = 'flex'; modal.style.alignItems = 'center'; modal.style.justifyContent = 'center';
+        modal.innerHTML = `
+            <div style="background:#fff;padding:20px;border-radius:6px;min-width:300px;">
+                <h3>Agregar Habitación</h3>
+                <form id="add-room-form">
+                    <label>Número:</label><br>
+                    <input name="number" required placeholder="E.g. 1" /><br>
+                    <label>Tipo:</label><br>
+                    <input name="type" required placeholder="E.g. Single" /><br><br>
+                    <button type="submit">Guardar</button>
+                    <button type="button" id="cancel-add">Cancelar</button>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        document.getElementById('cancel-add').addEventListener('click', ()=> modal.remove());
+
+            document.getElementById('add-room-form').addEventListener('submit', async (e)=>{
+                e.preventDefault();
+                const form = e.target;
+                const data = new FormData(form);
+                try {
+                const resp = await fetch(`{{ url_for("main.add_room") }}`, {method:'POST', body:data, credentials:'same-origin'});
+                    const ctype = resp.headers.get('content-type') || '';
+                    // If server redirected to login (HTML) or returned text, handle gracefully
+                    if (!ctype.includes('application/json')) {
+                        const text = await resp.text();
+                        console.error('Non-JSON response from /rooms/add:', resp.status, text);
+                        throw new Error('Respuesta inesperada del servidor (posible redirección a login).');
+                    }
+                    const j = await resp.json();
+                    if (!resp.ok) throw new Error(j.error || 'error');
+                    // append option to select
+                    const sel = document.querySelector('select[name="room_id"]');
+                    const opt = document.createElement('option');
+                    opt.value = j.room.id;
+                    opt.textContent = j.room.number + ' - ' + j.room.type;
+                    sel.appendChild(opt);
+                    sel.value = j.room.id;
+                    modal.remove();
+                } catch(err) {
+                    console.error(err);
+                    alert('Error al crear habitación: ' + (err.message || 'Error desconocido'));
+                }
+            });
+    });
+}
+</script>
+{% endblock %}

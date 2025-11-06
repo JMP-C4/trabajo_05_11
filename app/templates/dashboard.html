@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Dashboard</h2>
+<p>Bienvenido {{ current_user.username }}</p>
+<a href="{{ url_for('auth.logout') }}">Logout</a>
+<h3>Mis reservas</h3>
+<p>
+  <a href="{{ url_for('main.reserve') }}"><button>Agregar reserva</button></a>
+</p>
+{% if reservations %}
+<table border="1" cellpadding="6">
+	<thead>
+		<tr><th>ID</th><th>Habitación (ID)</th><th>Check-in</th><th>Check-out</th></tr>
+	</thead>
+	<tbody>
+	{% for r in reservations %}
+		<tr>
+			<td>{{ r.id }}</td>
+			<td>{{ r.room_id }}</td>
+			<td>{{ r.checkin }}</td>
+			<td>{{ r.checkout }}</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+{% else %}
+	<p>No tienes reservas activas.</p>
+{% endif %}
+{% endblock %}
